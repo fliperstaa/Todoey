@@ -8,8 +8,10 @@
 
 import UIKit
 import RealmSwift
+import SwipeCellKit
+import ChameleonFramework
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
 
     let realm = try! Realm()
     
@@ -32,6 +34,7 @@ class CategoryViewController: UITableViewController {
             
             let newCategory = Category()
             newCategory.name = textField.text!
+            newCategory.colour = UIColor.randomFlat.hexValue()
             self.save(category: newCategory)
         }
         
@@ -43,7 +46,6 @@ class CategoryViewController: UITableViewController {
         }
         
         alert.addAction(action)
-        
         
         present(alert, animated: true, completion: nil)
         
@@ -57,10 +59,13 @@ class CategoryViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No categories added yet"
         
+        guard let categoryColour = UIColor(hexString: (categoryArray?[indexPath.row].colour)!) else {fatalError()}
+        cell.backgroundColor = categoryColour
+        cell.textLabel?.textColor = ContrastColorOf(categoryColour, returnFlat: true)
         
         return cell
         
@@ -71,7 +76,6 @@ class CategoryViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         performSegue(withIdentifier: "toItemsSegue", sender: self)
-        
         
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -108,4 +112,21 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
     
+    override func updateModel(at indexPath: IndexPath) {
+        
+        
+        if let categoryForDeletion = self.categoryArray?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)
+                }
+            } catch {
+                print(error)
+            }
+//            tableView.reloadData()
+        }
+    }
+    
 }
+
+
