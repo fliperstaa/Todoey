@@ -35,9 +35,7 @@ class TodoListViewController: SwipeTableViewController {
         guard let colourHex = selectedCategory?.colour  else {fatalError() }
         
         title = selectedCategory?.name
-        
         updateNavBar(withHexCode: colourHex)
-        
         
     }
     
